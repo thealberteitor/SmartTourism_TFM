@@ -17,11 +17,10 @@ class DataPreprocessor:
         self.y = self.encode_label()
         self.X = self.df[columns].copy()
 
-        # Determine column types
         self.categorical_columns = self.X.select_dtypes(include=['object', 'category']).columns
         self.numerical_columns = self.X.select_dtypes(exclude=['object', 'category']).columns
 
-        # Preprocess Data
+
         self.preprocess_data()
 
     """
@@ -39,7 +38,6 @@ class DataPreprocessor:
             self.numerical_columns = self.X.select_dtypes(exclude=['object', 'category']).columns
     """
 
-
     def encode_label(self):
         encoder = LabelEncoder()
         return encoder.fit_transform(self.df[self.label])
@@ -47,8 +45,6 @@ class DataPreprocessor:
     def preprocess_data(self):
 
         #if self.label == 'park_price_will_affect_behaviour':
-        if self.label == 'label':
-            self.add_target()
 
         categorical_transformer = Pipeline([
             ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
@@ -76,19 +72,3 @@ class DataPreprocessor:
 
         self.X_processed = pd.DataFrame(X_processed, columns=all_features)
         return self.X_processed, self.y
-
-    def add_target(self):
-        np.random.seed(self.random_state)
-        partial_y = self.y.astype(float)
-        partial_y[:] = np.nan
-
-        for i in range(len(partial_y)):
-            rand_chance = np.random.rand()
-            if self.y[i] == 0:
-                partial_y[i] = 0 if rand_chance < 0.2 else None #np.random.randint(0, 12)
-            elif self.y[i] == 1:
-                partial_y[i] = 1 if rand_chance < 0.25 else None #np.random.randint(5,20)
-            elif self.y[i] == 2:
-                partial_y[i] = 2 if rand_chance < 0.5 else None #np.random.randint(0, 3)
-
-        self.X.loc[:, 'target_label'] = partial_y
